@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conjunto de Datos y Relaciones Dinámicas</title>
+</head>
+<body>
+
+    <!-- Formulario para ingresar los datos y la relación dinámica -->
+    <form id="formulario">
+        <label for="datos">Ingresa los datos separados por comas:</label><br>
+        <input type="text" id="datos" name="datos" required><br><br>
+
+        <label for="relacion-dinamica">Ingresa la relación (por ejemplo, a <= b o b / a):</label><br>
+        <input type="text" id="relacion-dinamica" name="relacion-dinamica" required><br><br>
+
+        <button type="submit">Enviar</button>
+    </form>
+
+    <h3>Resultado:</h3>
+    <p id="resultado-datos"></p> <!-- Donde se mostrará el conjunto de datos -->
+    <p id="resultado-relaciones"></p> <!-- Donde se mostrará el conjunto de relaciones -->
+    <p id="propiedades-relacion"></p> <!-- Donde se mostrarán las propiedades -->
+
+    <script>
+        document.getElementById("formulario").addEventListener("submit", function(event) {
+            event.preventDefault(); // Evita que el formulario recargue la página
+
+            // Obtener los datos ingresados por el usuario y convertirlos en un array
+            const inputDatos = document.getElementById("datos").value;
+            const arrayDeDatos = inputDatos.split(",").map(dato => dato.trim());
+
+            // Crear un conjunto para los datos únicos
+            const conjuntoDeDatos = new Set(arrayDeDatos);
+
+            // Obtener la relación dinámica ingresada por el usuario (por ejemplo, "a <= b")
+            const relacionDinamica = document.getElementById("relacion-dinamica").value;
+
+            // Crear un conjunto para las relaciones que cumplan la condición
+            const conjuntoDeRelaciones = new Set();
+
+            // Generar las relaciones evaluando la condición para cada par de elementos
+            arrayDeDatos.forEach(a => {
+                arrayDeDatos.forEach(b => {
+                    // Evaluar la condición dinámica usando 'eval'
+                    if (eval(relacionDinamica)) {
+                        conjuntoDeRelaciones.add(`(${a}, ${b})`);
+                    }
+                });
+            });
+
+            // Mostrar el conjunto de datos
+            document.getElementById("resultado-datos").innerText = `Conjunto de datos: ${[...conjuntoDeDatos].join(", ")}`;
+
+            // Mostrar el conjunto de relaciones que cumplen la condición
+            document.getElementById("resultado-relaciones").innerText = `Conjunto de relaciones: ${[...conjuntoDeRelaciones].join(", ")}`;
+
+            // Convertir el conjunto de relaciones en un array de pares
+            const relacionesArray = [...conjuntoDeRelaciones].map(rel => {
+                const [a, b] = rel.slice(1, -1).split(", ");
+                return [a, b];
+            });
+
+            // Verificación de propiedades
+            const esReflexiva = verificarReflexividad(arrayDeDatos, relacionesArray) ? "Es reflexiva" : "No es reflexiva";
+            const esIrreflexiva = verificarIrreflexividad(arrayDeDatos, relacionesArray) ? "Es irreflexiva" : "No es irreflexiva";
+            const esSimetrica = verificarSimetria(relacionesArray) ? "Es simétrica" : "No es simétrica";
+            const esAsimetrica = verificarAsimetria(relacionesArray) ? "Es asimétrica" : "No es asimétrica";
+            const esAntisimetrica = verificarAntisimetria(relacionesArray) ? "Es antisimétrica" : "No es antisimétrica";
+            const esTransitiva = verificarTransitividad(relacionesArray) ? "Es transitiva" : "No es transitiva";
+
+            // Mostrar las propiedades de la relación con etiquetas personalizadas
+            document.getElementById("propiedades-relacion").innerText = `
+                => ${esReflexiva},
+                => ${esIrreflexiva},
+                => ${esSimetrica},
+                => ${esAsimetrica},
+                => ${esAntisimetrica},
+                => ${esTransitiva}
+            `;
+        });
+
+        // Funciones para verificar las propiedades de la relación
+
+        // Reflexividad: Para todo 'a', (a, a) debe estar en las relaciones
+        function verificarReflexividad(datos, relaciones) {
+            return datos.every(a => relaciones.some(([x, y]) => x === a && y === a));
+        }
+
+        // Irreflexividad: Para todo 'a', (a, a) NO debe estar en las relaciones
+        function verificarIrreflexividad(datos, relaciones) {
+            return datos.every(a => !relaciones.some(([x, y]) => x === a && y === a));
+        }
+
+        // Simetría: Si (a, b) está en la relación, entonces (b, a) también debe estar
+        function verificarSimetria(relaciones) {
+            return relaciones.every(([a, b]) => a === b || relaciones.some(([x, y]) => x === b && y === a));
+        }
+
+        // Asimetría: Si (a, b) está en la relación, entonces (b, a) NO debe estar
+        function verificarAsimetria(relaciones) {
+            return relaciones.every(([a, b]) => a === b || !relaciones.some(([x, y]) => x === b && y === a));
+        }
+
+        // Antisimetría: Si (a, b) y (b, a) están en la relación, entonces a debe ser igual a b
+        function verificarAntisimetria(relaciones) {
+            return relaciones.every(([a, b]) => a === b || !relaciones.some(([x, y]) => x === b && y === a));
+        }
+
+        // Transitividad: Si (a, b) y (b, c) están en la relación, entonces (a, c) también debe estar
+        function verificarTransitividad(relaciones) {
+            return relaciones.every(([a, b]) => relaciones.every(([x, y]) => b !== x || relaciones.some(([c, d]) => a === c && d === y)));
+        }
+    </script>
+
+</body>
+</html>
+
